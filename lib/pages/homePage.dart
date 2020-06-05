@@ -1,10 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qr_generator/bloc/codeBloc.dart';
-import 'package:qr_generator/bloc/codeEvent.dart';
+import 'package:qr_generator/bloc/blocs.dart';
+import 'package:qr_generator/enum/enums.dart';
 import 'package:qr_generator/pages/codeDisplayPage.dart';
-import 'package:qr_generator/widgets/myChoiceChip.dart';
-import 'package:qr_generator/widgets/myScaffold.dart';
+import 'package:qr_generator/widgets/widgets.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,6 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final textController = TextEditingController();
+  var currentCode = Codes.Text;
 
   @override
   void dispose() {
@@ -20,15 +21,41 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void codeGenerate() {
+  void onPressed() {
     String codeText = textController.text;
 
-    BlocProvider.of<CodeBloc>(context).add(PlainTextCode(text: codeText));
-    
+    switch (currentCode) {
+      case Codes.Text:
+        BlocProvider.of<CodeBloc>(context).add(TextCode(data: {'text': codeText}));
+        break;
+
+      case Codes.Wifi:
+        // BlocProvider.of<CodeBloc>(context).add(WifiCode(text: codeText));
+        break;
+
+      case Codes.URL:
+        // BlocProvider.of<CodeBloc>(context).add(URLCode(text: codeText));
+        break;
+
+      case Codes.Contact:
+        // BlocProvider.of<CodeBloc>(context).add(ContactCode(text: codeText));
+        break;
+    }
+
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => CodeDisplayPage()));
+        context, MaterialPageRoute(builder: (context) => CodeDisplayPage()));
+  }
+
+  // Generates a ChoiceChip from the given enum value
+  Widget codeToChipGenerator(Codes code) {
+    return MyChoiceChip(
+        text: describeEnum(code),
+        selected: currentCode == code,
+        onSelected: (bool selected) {
+          setState(() {
+            currentCode = code;
+          });
+        });
   }
 
   @override
@@ -40,23 +67,19 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              // Container(
-              //   decoration: BoxDecoration(
-              //     border: Border.all(color: Colors.white)
-              //   ),
-              //   child: Wrap(
-              //     children: <Widget>[
-              //       MyChoiceChip(text: "Plain Text", selected: true,),
-              //       MyChoiceChip(text: "Wifi")
-              //     ],
-              //   ),
-              // ),
+              Container(
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.white)),
+                child: Wrap(
+                    children: Codes.values.map(codeToChipGenerator).toList()),
+              ),
               TextField(
                 maxLength: 200,
                 decoration: InputDecoration(hintText: "Enter Text"),
                 controller: textController,
               ),
-              RaisedButton(child: Text("Generate"), onPressed: codeGenerate)
+              RaisedButton(
+                  child: Text("Generate $currentCode"), onPressed: onPressed),
             ],
           ),
         ),

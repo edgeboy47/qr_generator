@@ -10,8 +10,8 @@ class CodeBloc extends Bloc<CodeEvent, QrCode> {
 
   @override
   Stream<QrCode> mapEventToState(CodeEvent event) async*{
-      if(event is PlainTextCode){
-        final code = QrCode.fromData(data: event.text, errorCorrectLevel: QrErrorCorrectLevel.L);
+      if(event is TextCode){
+        final code = QrCode.fromData(data: event.data['text'], errorCorrectLevel: QrErrorCorrectLevel.L);
         code.make();
         yield code;
       }

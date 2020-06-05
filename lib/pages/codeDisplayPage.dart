@@ -13,7 +13,9 @@ class CodeDisplayPage extends StatelessWidget {
           child: BlocBuilder(
             bloc: BlocProvider.of<CodeBloc>(context),
             builder: (context, state) {
-              return QrImage.withQr(qr: state);
+              return QrImage.withQr(
+                qr: state,
+                backgroundColor: Colors.white,);
             })),
       ),
     );

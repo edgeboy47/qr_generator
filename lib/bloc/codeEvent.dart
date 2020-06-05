@@ -1,17 +1,24 @@
 import 'package:flutter/foundation.dart';
 
 abstract class CodeEvent{
-  const CodeEvent();
+  final Map <String, String> data;
+
+  const CodeEvent({@required this.data});
 }
 
-class PlainTextCode extends CodeEvent {
-  final String text;
-
-  const PlainTextCode({@required this.text}): assert (text.length != 0);
+class TextCode extends CodeEvent {
+  const TextCode({Map<String, String> data}) : super(data: data);
 }
 
-class WifiCode extends CodeEvent {}
+class WifiCode extends CodeEvent {
+  const WifiCode({Map<String, String> data}) : super(data: data);
+}
 
-class ContactCode extends CodeEvent {}
+class ContactCode extends CodeEvent {
+  const ContactCode({Map<String, String> data}) : super(data: data);
 
-class URLCode extends CodeEvent {}
+}
+
+class URLCode extends CodeEvent {
+  const URLCode({Map<String, String> data}) : super(data: data);
+}
