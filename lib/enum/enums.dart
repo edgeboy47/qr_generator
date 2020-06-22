@@ -1,0 +1,1 @@
+enum Codes { Text, Wifi, URL, Contact }
