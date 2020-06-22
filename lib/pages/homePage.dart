@@ -12,21 +12,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final textController = TextEditingController();
-  var currentCode = Codes.Text;
+  Codes currentCode = Codes.Text;
+  var payload = {};
+  var codeToKeyMap = <Codes, GlobalKey<FormState>>{
+    Codes.Text: GlobalKey<FormState>(),
+  };
 
   @override
   void dispose() {
-    textController.dispose();
     super.dispose();
   }
 
   void onPressed() {
-    String codeText = textController.text;
-
     switch (currentCode) {
       case Codes.Text:
-        BlocProvider.of<CodeBloc>(context).add(TextCode(data: {'text': codeText}));
+        BlocProvider.of<CodeBloc>(context)
+            .add(TextCode(data: {'text': payload["text"]}));
         break;
 
       case Codes.Wifi:
@@ -73,13 +74,32 @@ class _HomePageState extends State<HomePage> {
                 child: Wrap(
                     children: Codes.values.map(codeToChipGenerator).toList()),
               ),
-              TextField(
-                maxLength: 200,
-                decoration: InputDecoration(hintText: "Enter Text"),
-                controller: textController,
+              Form(
+                key: codeToKeyMap[Codes.Text],
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      validator: (value) {
+                        return value.isEmpty ? "Please enter text" : null;
+                      },
+                      onSaved: (value) {
+                        payload["text"] = value;
+                      },
+                      maxLength: 200,
+                      decoration: InputDecoration(hintText: "Enter Text"),
+                    ),
+                    RaisedButton(
+                      child: Text("Generate $currentCode"),
+                      onPressed: () {
+                        if (codeToKeyMap[Codes.Text].currentState.validate()) {
+                          codeToKeyMap[Codes.Text].currentState.save();
+                          onPressed();
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-              RaisedButton(
-                  child: Text("Generate $currentCode"), onPressed: onPressed),
             ],
           ),
         ),
