@@ -15,7 +15,12 @@ class CodeBloc extends Bloc<CodeEvent, QrCode> {
         code.make();
         yield code;
       }
-    
+
+      if(event is URLCode){
+        final code = QrCode.fromData(data: event.data['url'], errorCorrectLevel: QrErrorCorrectLevel.L);
+        code.make();
+        yield code;
+      }
   }
   
   

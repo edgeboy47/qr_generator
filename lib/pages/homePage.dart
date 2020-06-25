@@ -13,9 +13,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Codes currentCode = Codes.Text;
-  var payload = {};
+
+  var payload = <String, dynamic>{};
+
   var codeToKeyMap = <Codes, GlobalKey<FormState>>{
     Codes.Text: GlobalKey<FormState>(),
+    Codes.Contact: GlobalKey<FormState>(),
+    Codes.Wifi: GlobalKey<FormState>(),
+    Codes.URL: GlobalKey<FormState>(),
   };
 
   @override
@@ -26,8 +31,7 @@ class _HomePageState extends State<HomePage> {
   void onPressed() {
     switch (currentCode) {
       case Codes.Text:
-        BlocProvider.of<CodeBloc>(context)
-            .add(TextCode(data: {'text': payload["text"]}));
+        BlocProvider.of<CodeBloc>(context).add(TextCode(data: payload));
         break;
 
       case Codes.Wifi:
@@ -35,7 +39,7 @@ class _HomePageState extends State<HomePage> {
         break;
 
       case Codes.URL:
-        // BlocProvider.of<CodeBloc>(context).add(URLCode(text: codeText));
+        BlocProvider.of<CodeBloc>(context).add(URLCode(data: payload));
         break;
 
       case Codes.Contact:
@@ -50,13 +54,101 @@ class _HomePageState extends State<HomePage> {
   // Generates a ChoiceChip from the given enum value
   Widget codeToChipGenerator(Codes code) {
     return MyChoiceChip(
-        text: describeEnum(code),
-        selected: currentCode == code,
-        onSelected: (bool selected) {
-          setState(() {
-            currentCode = code;
-          });
+      text: describeEnum(code),
+      selected: currentCode == code,
+      onSelected: (bool selected) {
+        setState(() {
+          currentCode = code;
         });
+      },
+    );
+  }
+
+  Form formBuilder() {
+    Form form;
+
+    switch (currentCode) {
+      case Codes.Text:
+        form = Form(
+          key: codeToKeyMap[Codes.Text],
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                validator: (value) {
+                  return value.isEmpty ? "Please enter some text" : null;
+                },
+                onSaved: (value) {
+                  payload = {};
+                  payload["text"] = value;
+                },
+                maxLength: 200,
+                decoration: InputDecoration(hintText: "Enter Text"),
+              ),
+              RaisedButton(
+                child: Text("Generate QR Code"),
+                onPressed: () {
+                  if (codeToKeyMap[Codes.Text].currentState.validate()) {
+                    codeToKeyMap[Codes.Text].currentState.save();
+                    onPressed();
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+        break;
+
+      case Codes.Contact:
+        form = Form(
+          key: codeToKeyMap[Codes.Contact],
+          child: Column(
+            children: <Widget>[],
+          ),
+        );
+        break;
+
+      case Codes.URL:
+        form = Form(
+          key: codeToKeyMap[Codes.Text],
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                validator: (value) {
+                  //TODO: Add custom validation for urls
+                  return value.isEmpty ? "Please enter a valid URL" : null;
+                },
+                onSaved: (value) {
+                  payload = {};
+                  payload["url"] = value;
+                },
+                maxLength: 200,
+                decoration: InputDecoration(hintText: "Enter URL"),
+              ),
+              RaisedButton(
+                child: Text("Generate QR Code"),
+                onPressed: () {
+                  if (codeToKeyMap[Codes.Text].currentState.validate()) {
+                    codeToKeyMap[Codes.Text].currentState.save();
+                    onPressed();
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+        break;
+
+      case Codes.Wifi:
+        form = Form(
+          key: codeToKeyMap[Codes.Wifi],
+          child: Column(
+            children: <Widget>[],
+          ),
+        );
+        break;
+    }
+
+    return form;
   }
 
   @override
@@ -69,37 +161,14 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Container(
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.white)),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white),
+                ),
                 child: Wrap(
-                    children: Codes.values.map(codeToChipGenerator).toList()),
-              ),
-              Form(
-                key: codeToKeyMap[Codes.Text],
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      validator: (value) {
-                        return value.isEmpty ? "Please enter text" : null;
-                      },
-                      onSaved: (value) {
-                        payload["text"] = value;
-                      },
-                      maxLength: 200,
-                      decoration: InputDecoration(hintText: "Enter Text"),
-                    ),
-                    RaisedButton(
-                      child: Text("Generate $currentCode"),
-                      onPressed: () {
-                        if (codeToKeyMap[Codes.Text].currentState.validate()) {
-                          codeToKeyMap[Codes.Text].currentState.save();
-                          onPressed();
-                        }
-                      },
-                    ),
-                  ],
+                  children: Codes.values.map(codeToChipGenerator).toList(),
                 ),
               ),
+              formBuilder(),
             ],
           ),
         ),
