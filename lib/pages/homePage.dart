@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
       onSelected: (bool selected) {
         setState(() {
           currentCode = code;
+          payload = {};
         });
       },
     );
@@ -75,11 +76,10 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               TextFormField(
                 validator: (value) {
-                  return value.isEmpty ? "Please enter some text" : null;
+                  return value.trim().isEmpty ? "Please enter some text" : null;
                 },
                 onSaved: (value) {
-                  payload = {};
-                  payload["text"] = value;
+                  payload["text"] = value.trim();
                 },
                 maxLength: 200,
                 decoration: InputDecoration(hintText: "Enter Text"),
@@ -102,27 +102,16 @@ class _HomePageState extends State<HomePage> {
         form = Form(
           key: codeToKeyMap[Codes.Contact],
           child: Column(
-            children: <Widget>[],
-          ),
-        );
-        break;
-
-      case Codes.URL:
-        form = Form(
-          key: codeToKeyMap[Codes.Text],
-          child: Column(
             children: <Widget>[
               TextFormField(
                 validator: (value) {
-                  //TODO: Add custom validation for urls
-                  return value.isEmpty ? "Please enter a valid URL" : null;
+                  return value.isEmpty ? "Please enter some text" : null;
                 },
                 onSaved: (value) {
-                  payload = {};
-                  payload["url"] = value;
+                  payload["text"] = value;
                 },
                 maxLength: 200,
-                decoration: InputDecoration(hintText: "Enter URL"),
+                decoration: InputDecoration(hintText: "Enter Text"),
               ),
               RaisedButton(
                 child: Text("Generate QR Code"),
@@ -138,11 +127,76 @@ class _HomePageState extends State<HomePage> {
         );
         break;
 
+      case Codes.URL:
+        form = Form(
+          key: codeToKeyMap[currentCode],
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                validator: (value) {
+                  final reg = RegExp(
+                      r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",
+                      caseSensitive: false);
+
+                  return reg.hasMatch(value.trim()) == false
+                      ? "Please enter a valid URL"
+                      : null;
+                },
+                onSaved: (value) {
+                  payload["url"] = value.trim();
+                },
+                maxLength: 200,
+                decoration: InputDecoration(hintText: "Enter URL"),
+              ),
+              RaisedButton(
+                child: Text("Generate QR Code"),
+                onPressed: () {
+                  if (codeToKeyMap[currentCode].currentState.validate()) {
+                    codeToKeyMap[currentCode].currentState.save();
+                    onPressed();
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+        break;
+
       case Codes.Wifi:
         form = Form(
-          key: codeToKeyMap[Codes.Wifi],
+          key: codeToKeyMap[currentCode],
           child: Column(
-            children: <Widget>[],
+            children: <Widget>[
+              TextFormField(
+                validator: (value) {
+                  return value.isEmpty ? "Please enter some text" : null;
+                },
+                onSaved: (value) {
+                  payload["ssid"] = value;
+                },
+                maxLength: 200,
+                decoration: InputDecoration(hintText: "Enter SSID"),
+              ),
+              TextFormField(
+                validator: (value) {
+                  return value.isEmpty ? "Please enter some text" : null;
+                },
+                onSaved: (value) {
+                  payload["password"] = value;
+                },
+                maxLength: 200,
+                decoration: InputDecoration(hintText: "Enter Password"),
+              ),
+              RaisedButton(
+                child: Text("Generate QR Code"),
+                onPressed: () {
+                  if (codeToKeyMap[currentCode].currentState.validate()) {
+                    codeToKeyMap[currentCode].currentState.save();
+                    onPressed();
+                  }
+                },
+              ),
+            ],
           ),
         );
         break;
@@ -158,8 +212,9 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.all(20.0),
         child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
+              // SizedBox(),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.white),
